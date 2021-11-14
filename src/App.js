@@ -5,12 +5,17 @@ import {
   Switch,
   Redirect,
 } from "react-router-dom";
-import TheLayout from "./containers/layouts/TheLayout/TheLayout";
+
+import Login from "./containers/login";
+import { HOMEPAGE, LOGIN_URL } from "./constants";
+import TheLayout from "containers/layouts/layout/TheLayout";
 
 function App() {
   return (
     <Router>
       <Switch>
+        <Route path={LOGIN_URL} component={Login} />
+
         {routes.map((route, idx) => {
           return (
             route.component && (
@@ -23,10 +28,9 @@ function App() {
             )
           );
         })}
-        <Redirect from="/" to="/workspaces" />
+        <Redirect from={HOMEPAGE} to={LOGIN_URL} />
       </Switch>
     </Router>
   );
 }
-
 export default App;
