@@ -1,44 +1,390 @@
 import { ThemeProvider } from "@material-ui/core";
 import { theme } from "assets/css/Common";
-import { INITIAL_PAGE, INITIAL_ROWS_PER_PAGE } from "constants/index";
-import React, { useState } from "react";
+import { Message } from "components/common/Message";
+import {
+  ASC,
+  DEFAULT_RESOURCE,
+  DESC,
+  IMAGES_URL,
+  INITIAL_PAGE,
+  INITIAL_ROWS_PER_PAGE,
+  SIZE_OPTION,
+  STATUS,
+  STATUS_OPTION,
+} from "constants/index";
+import React, { useEffect, useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import { clearMessage, setMessage } from "redux/actions/msgAction";
+import {
+  addResource,
+  archiveResource,
+  deleteResource,
+  editResource,
+  exportResources,
+  getResources,
+  importResources,
+} from "redux/actions/resourceAction";
+import { getTeams } from "redux/actions/teamAction";
+import { SET_MESSAGE } from "redux/constants";
+import * as _ from "underscore";
+import { storage } from "../../firebase";
+import ResourceDialog from "./dialog/ResourceDialog";
 import ResourcesTable from "./table/Table";
 import TableFooter from "./table/TableFooter";
 import TableToolbar from "./table/TableToolbar";
+import SettingDialog from "./dialog/SettingDialog";
+
+const DEFAULT_PARAMS = {
+  page: INITIAL_PAGE,
+  size: INITIAL_ROWS_PER_PAGE,
+  keyword: "",
+  sortColumn: "",
+  type: false,
+  isArchived: STATUS,
+};
 
 export default function Resources() {
   const { id } = useParams();
+  const dispatch = useDispatch();
 
-  const [resources, setResources] = useState([
-    {
-      avatar:
-        "https://firebasestorage.googleapis.com/v0/b/hr-resourcing-app-10cd0.appspot.com/o/images%2F20210522_052222.jpg?alt=media&token=7313fe56-77ed-4567-9bd6-c37769a41c69",
-      createdBy: 15,
-      createdDate: "2021-07-24T10:12:01.516+00:00",
-      id: 151,
-      listTime: [],
-      modifiedBy: 15,
-      modifiedDate: "2021-07-24T10:12:01.516+00:00",
-      name: "Tim",
-      positionDTO: {
-        id: 12,
-        name: "Manager",
-        teamDTO: { id: 44, name: "QA", workspaceDTO: null, positionDTOS: null },
-      },
-    },
-  ]);
+  const [resources, setResources] = useState([]);
+  const storeResources = useSelector((state) => state.resources);
 
-  const [page, setPage] = useState(INITIAL_PAGE);
-  const [rowsPerPage, setRowsPerPage] = useState(INITIAL_ROWS_PER_PAGE);
+  const { message } = useSelector((state) => state.message);
+  const [openMessage, setOpenMessage] = useState(false);
 
-  const [pageSize, setPageSize] = useState(1);
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [resourceId, setResourceId] = useState(null);
+  const [resource, setResource] = useState(null);
+
+  const storeTeams = useSelector((state) => state.teams);
+
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [errorImport, setErrorImport] = useState(false);
+
+  const [params, setParams] = useState(DEFAULT_PARAMS);
+
+  const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
+
+  const [isCallApi, setIsCallApi] = useState(false);
+
+  const [searched, setSearched] = useState("");
+
+  const [isLoading, setLoading] = useState(false);
+  const isInitialMount = useRef(true);
+
+  const handleOpenDialog = (resource = null) => {
+    setResource(
+      resource
+        ? {
+            avatar: _.get(resource, "avatar"),
+            name: _.get(resource, "name"),
+            teamId: _.get(resource, ["positionDTO", "teamDTO", "id"]),
+            positionId: _.get(resource, ["positionDTO", "id"]),
+            team: _.get(resource, ["positionDTO", "teamDTO", "name"]),
+            position: _.get(resource, ["positionDTO", "name"]),
+          }
+        : DEFAULT_RESOURCE
+    );
+    setResourceId(resource ? _.get(resource, "id") : null);
+    setIsOpenDialog(true);
+  };
+
+  const fetchResources = (loading = false) => {
+    const data = {
+      ...params,
+      page: params.page - 1,
+      type: params.type ? ASC : DESC,
+      isArchived: params.isArchived === STATUS ? "" : params.isArchived,
+    };
+    if (loading) {
+      setLoading(true);
+      dispatch(getResources(id, data)).finally(() => setLoading(false));
+    } else dispatch(getResources(id, data));
+  };
+
+  useEffect(() => {
+    dispatch(clearMessage());
+    dispatch(getTeams(id));
+
+    fetchResources(true);
+  }, [id]);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      fetchResources();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  useEffect(() => {
+    if (!storeResources.data) {
+      return;
+    }
+
+    setResources(storeResources.data);
+  }, [storeResources.data]);
+
+  useEffect(() => {
+    if (storeTeams.data) {
+      setIsCallApi(true);
+    }
+  }, [storeTeams.data]);
+
+  const handleCloseSettingsDialog = () => {
+    setOpenMessage(true);
+    fetchResources();
+    setOpenSettingsDialog(false);
+    dispatch(getTeams(id));
+    setIsCallApi(false);
+  };
+
+  const handleOpenSettingsDialog = () => {
+    setOpenSettingsDialog(true);
+  };
+
+  const keyUp = (event) => {
+    if (event.keyCode === 13 || searched === "") {
+      if (searched !== params.keyword)
+        setParams({
+          ...params,
+          keyword: searched,
+          page: INITIAL_PAGE,
+        });
+    }
+  };
+
+  const cancelSearch = () => {
+    setParams({ ...params, keyword: "" });
+  };
+
+  const handleSort = (orderBy) => {
+    setParams({ ...params, sortColumn: orderBy, type: !params.type });
+  };
+
+  const handleCloseMessage = (reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenMessage(false);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setParams({ ...params, page: newPage });
+  };
+
+  const handleChangeDropdown = (e) => {
+    const { name, value } = e.target;
+    if (name === SIZE_OPTION)
+      setParams({ ...params, page: INITIAL_PAGE, size: value });
+
+    if (name === STATUS_OPTION)
+      setParams({ ...params, page: INITIAL_PAGE, isArchived: value });
+    return;
+  };
+
+  const handleReset = () => {
+    setSearched("");
+    setParams({
+      ...params,
+      page: INITIAL_PAGE,
+      keyword: "",
+      sortColumn: "",
+      isArchived: STATUS,
+    });
+  };
+
+  const callApiAddResource = (id, resource) => {
+    dispatch(addResource(id, resource))
+      .then(() => {
+        setOpenMessage(true);
+        params === DEFAULT_PARAMS ? fetchResources() : handleReset();
+      })
+      .catch(() => {
+        setOpenMessage(true);
+      });
+  };
+
+  const callApiEditResource = (id, resourceId, resource) => {
+    dispatch(editResource(id, resourceId, resource))
+      .then(() => {
+        setOpenMessage(true);
+        fetchResources();
+      })
+      .catch(() => {
+        setOpenMessage(true);
+      });
+  };
+
+  const getUploadedImageUrl = async (avatarFile) => {
+    return new Promise((resolve, reject) => {
+      const uploadTask = storage
+        .ref(`${IMAGES_URL}${avatarFile.name}`)
+        .put(avatarFile);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          setIsUploading(true);
+        },
+        (error) => {
+          dispatch({
+            type: SET_MESSAGE,
+            payload: error,
+          });
+          reject(error);
+        },
+        async () => {
+          const imgURL = await uploadTask.snapshot.ref.getDownloadURL();
+          resolve(imgURL);
+          setIsUploading(false);
+          return imgURL;
+        }
+      );
+    });
+  };
+
+  const handelDeleteResource = (resourceId) => {
+    dispatch(deleteResource(id, resourceId))
+      .then(() => {
+        setOpenMessage(true);
+        if (_.size(resources) === 1)
+          setParams({
+            ...params,
+            page: params.page - 1,
+          });
+        else fetchResources();
+      })
+      .catch(() => {
+        setOpenMessage(true);
+      });
+  };
+
+  const emptyRows = params.size - Math.min(params.size, resources.length);
+
+  const handleExportResources = () => {
+    dispatch(exportResources(id)).then(() => {
+      dispatch(setMessage("export successfully!"));
+
+      setOpenMessage(true);
+    });
+  };
+
+  const handleImportResources = (file) => {
+    if (file.type === "application/vnd.ms-excel") {
+      dispatch(importResources(id, file))
+        .then(() => {
+          handleReset();
+          dispatch(setMessage("import successfully!"));
+
+          setOpenMessage(true);
+        })
+        .catch(() => {
+          setOpenMessage(true);
+        });
+    } else {
+      dispatch(setMessage("Wrong type of file. Please choose csv file!"));
+      setErrorImport(true);
+      setOpenMessage(true);
+      setErrorImport(false);
+    }
+  };
+
+  const callApiArchiveResource = (projectId, handleCloseArchiveDialog) => {
+    dispatch(archiveResource(id, projectId))
+      .then(() => {
+        fetchResources();
+        setOpenMessage(true);
+      })
+      .catch(() => {
+        setOpenMessage(true);
+      })
+      .finally(() => {
+        handleCloseArchiveDialog();
+      });
+  };
 
   return (
     <ThemeProvider theme={theme}>
-      <TableToolbar />
-      <ResourcesTable data={resources} />
-      <TableFooter page={page} rowsPerPage={rowsPerPage} pageSize={pageSize} />
+      {!storeTeams.data ? (
+        <></>
+      ) : (
+        <SettingDialog
+          open={
+            isCallApi && (storeTeams.data?.length === 0 || openSettingsDialog)
+          }
+          isObligated={storeTeams.data?.length === 0}
+          teamsPositions={storeTeams.data || []}
+          handleCloseSettingsDialog={handleCloseSettingsDialog}
+          setOpenSettingsDialog={setOpenSettingsDialog}
+          type={storeTeams.data?.length > 0 ? "put" : "post"}
+        />
+      )}
+
+      <TableToolbar
+        // keyword={params.keyword}
+        searched={searched}
+        setSearched={setSearched}
+        cancelSearch={cancelSearch}
+        status={params.isArchived}
+        keyUp={keyUp}
+        handleChangeDropdown={handleChangeDropdown}
+        handleOpenDialog={handleOpenDialog}
+        handleReset={handleReset}
+        handleExportResources={handleExportResources}
+        handleImportResources={handleImportResources}
+        handleSettingsDialog={handleOpenSettingsDialog}
+      />
+      <ResourcesTable
+        data={resources}
+        emptyRows={emptyRows}
+        sortName={params.sortColumn}
+        handleSort={handleSort}
+        isLoading={isLoading}
+        handleOpenDialog={handleOpenDialog}
+        handelDeleteResource={handelDeleteResource}
+        callApiArchiveResource={callApiArchiveResource}
+      />
+      <TableFooter
+        page={params.page}
+        rowsPerPage={params.size}
+        pageSize={storeResources.pageSize}
+        handleChangePage={handleChangePage}
+        handleChangeDropdown={handleChangeDropdown}
+      />
+      {!resource ? (
+        <></>
+      ) : (
+        <ResourceDialog
+          isOpenDialog={isOpenDialog}
+          resource={resource}
+          resourceId={resourceId}
+          teams={storeTeams.data || []}
+          setResource={setResource}
+          setIsOpenDialog={setIsOpenDialog}
+          callApiAddResource={callApiAddResource}
+          getUploadedImageUrl={getUploadedImageUrl}
+          callApiEditResource={callApiEditResource}
+        />
+      )}
+      {!message ? (
+        <></>
+      ) : (
+        <Message
+          message={message}
+          isOpen={openMessage}
+          handleCloseMessage={handleCloseMessage}
+          type={
+            storeResources.status === 200 || storeTeams.status === 200
+              ? "success"
+              : "error"
+          }
+        />
+      )}
     </ThemeProvider>
   );
 }

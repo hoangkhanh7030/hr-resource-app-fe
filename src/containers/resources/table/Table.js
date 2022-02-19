@@ -1,48 +1,51 @@
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableContainer,
-  TableRow,
-} from "@material-ui/core";
+import { Paper, Table, TableBody, TableContainer } from "@material-ui/core";
+import { EmptyRows } from "components/resources/EmptyRows";
+import { LoadingTable } from "components/resources/LoadingTable";
+import { INITIAL_ROWS_PER_PAGE } from "constants/index";
 import React from "react";
-import { StyledTableCell, useStyles } from "./style";
+import * as _ from "underscore";
+import { useStyles } from "./style";
 import TableHeader from "./TableHeader";
 import EnhancedTableRow from "./TableRow";
+
 export default function ResourcesTable(props) {
-  const { data, rowsPerPage, handleSort, handleOpenDialog } = props;
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length);
+  const {
+    data = [],
+    emptyRows = INITIAL_ROWS_PER_PAGE,
+    sortName = "",
+    handleSort,
+    isLoading = false,
+    handleOpenDialog,
+    handelDeleteResource,
+    callApiArchiveResource,
+  } = props;
   const classes = useStyles({ emptyRows });
 
-  const hasData = () => {
-    return data && data.length > 0;
-  };
-  const hasEmptyRows = () => {
-    return emptyRows > 0 && data.length !== 0;
-  };
   return (
     <TableContainer component={Paper} className={classes.root} elevation={0}>
       <Table className={classes.table}>
-        <TableHeader classes={classes} handleSort={handleSort} />
+        <TableHeader classes={classes} handleSort={handleSort} sortName={sortName}/>
         <TableBody>
-          {hasData() ? (
-            data.map((row) => {
-              return (
+          {isLoading ? (
+            <LoadingTable />
+          ) : (
+            <>
+              {data.map((row) => (
                 <EnhancedTableRow
+                  key={_.get(row, "id")}
                   row={row}
                   handleOpenDialog={handleOpenDialog}
-                ></EnhancedTableRow>
-              );
-            })
-          ) : (
-            <></>
-          )}
-          {hasEmptyRows() ? (
-            <TableRow className={classes.emptyRows}>
-              <StyledTableCell colSpan={6} />
-            </TableRow>
-          ) : (
-            <></>
+                  handleDeleteProject={handelDeleteResource}
+                  handleArchiveProject={callApiArchiveResource}
+                />
+              ))}
+
+              <EmptyRows
+                isFullPage={!emptyRows}
+                isEmptyTable={data.length === 0}
+                rowHeight={classes.emptyRows}
+              />
+            </>
           )}
         </TableBody>
       </Table>

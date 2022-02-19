@@ -11,12 +11,21 @@ import {
 
 import { StyledTableCell, useStyles } from "./style";
 import ProjectRow from "./TableRow";
-import { LoadingTable } from "components/projects/LoadingTable";
-import { EmptyRows } from "components/projects/EmptyRows";
+import { LoadingTable } from "components/projects/table/LoadingTable";
+import { EmptyRows } from "components/projects/table/EmptyRows";
 import * as _ from "underscore";
 import { PROJECT_NAME, CLIENT_NAME, IS_ACTIVATED } from "constants/index";
 
-const ProjectsTable = ({ rows = [], emptyRows = 5, handleSort, isLoading }) => {
+const ProjectsTable = ({
+  rows = [],
+  emptyRows = 5,
+  sortName="",
+  handleSort,
+  isLoading,
+  handleOpenDialog,
+  handleDeleteProject,
+  handleArchiveProject,
+}) => {
   const classes = useStyles({ emptyRows });
 
   return (
@@ -29,6 +38,7 @@ const ProjectsTable = ({ rows = [], emptyRows = 5, handleSort, isLoading }) => {
                 Project Name
                 <IconButton
                   className={`${classes.tableTitleIcon} fas fa-sort`}
+                  style={{ color: sortName === PROJECT_NAME ? "black" : "#CECECE" }}
                   onClick={() => handleSort(PROJECT_NAME)}
                 ></IconButton>
               </Typography>
@@ -38,6 +48,7 @@ const ProjectsTable = ({ rows = [], emptyRows = 5, handleSort, isLoading }) => {
                 Client Name
                 <IconButton
                   className={`${classes.tableTitleIcon} ${classes.tableTitleIconCenter} fas fa-sort`}
+                  style={{ color: sortName === CLIENT_NAME ? "black" : "#CECECE" }}
                   onClick={() => handleSort(CLIENT_NAME)}
                 ></IconButton>
               </Typography>
@@ -47,6 +58,7 @@ const ProjectsTable = ({ rows = [], emptyRows = 5, handleSort, isLoading }) => {
                 Status
                 <IconButton
                   className={`${classes.tableTitleIcon} ${classes.tableTitleIconCenter} fas fa-sort`}
+                  style={{ color: sortName === IS_ACTIVATED ? "black" : "#CECECE" }}
                   onClick={() => handleSort(IS_ACTIVATED)}
                 ></IconButton>
               </Typography>
@@ -63,7 +75,13 @@ const ProjectsTable = ({ rows = [], emptyRows = 5, handleSort, isLoading }) => {
           ) : (
             <>
               {rows.map((row) => (
-                <ProjectRow key={_.get(row, "id")} project={row} />
+                <ProjectRow
+                  key={_.get(row, "id")}
+                  project={row}
+                  handleOpenDialog={handleOpenDialog}
+                  handleDeleteProject={handleDeleteProject}
+                  handleArchiveProject={handleArchiveProject}
+                />
               ))}
 
               <EmptyRows

@@ -6,7 +6,7 @@ import {
   Redirect,
 } from "react-router-dom";
 
-import Login from "./containers/login";
+import Login from "./containers/Login";
 import { HOMEPAGE, LOGIN_URL } from "./constants";
 import TheLayout from "containers/layouts/layout/TheLayout";
 

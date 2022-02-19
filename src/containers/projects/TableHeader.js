@@ -3,18 +3,24 @@ import React, { useState } from "react";
 import { Button, Box } from "@material-ui/core";
 
 import SearchBar from "material-ui-search-bar";
-import { StatusFilter } from "components/projects/StatusFilter";
-import { MoreOptions } from "components/projects/MoreOptions";
+import { StatusFilter } from "components/projects/toolbar/StatusFilter";
+import { MoreOptions } from "components/projects/toolbar/MoreOptions";
 
 import { STATUS } from "constants/index";
 import { useStyles } from "./style";
+import { ResetBtn } from "components/common/ResetBtn";
 
 export default function ProjectsHeader({
   searched = "",
   status = STATUS,
+  keyUp,
   setSearched,
   cancelSearch,
   handleChangeDropdown,
+  handleOpenDialog,
+  handleReset,
+  handleImportProjects,
+  handleExportProjects,
 }) {
   const classes = useStyles();
 
@@ -36,19 +42,24 @@ export default function ProjectsHeader({
           value={searched}
           className={classes.searchbar}
           onCancelSearch={cancelSearch}
-          onChange={(newValue) => setSearched(newValue)}
+          onKeyUp={keyUp}
+          onChange={(newValue)=> setSearched(newValue)}
         />
         <StatusFilter
           status={status}
           handleChangeDropdown={handleChangeDropdown}
         />
+        <ResetBtn onClick={handleReset} />
       </Box>
 
       <Box>
         <MoreOptions
           anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
           handleClickOption={handleClickOption}
           handleCloseOption={handleCloseOption}
+          handleImportProjects={handleImportProjects}
+          handleExportProjects={handleExportProjects}
         />
 
         <Button
@@ -56,6 +67,7 @@ export default function ProjectsHeader({
           variant="contained"
           disableElevation
           className={classes.button}
+          onClick={() => handleOpenDialog()}
         >
           New Project
         </Button>

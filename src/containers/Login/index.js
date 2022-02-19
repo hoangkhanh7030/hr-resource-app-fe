@@ -16,7 +16,7 @@ export default function Login() {
   const [invalidInputs, setInvalidInputs] = useState({});
 
   const { isLoggedIn, isLoading } = useSelector((state) => state.auth);
-
+  const [isLoginGG, setLoginGG] = useState(false);
   const { message } = useSelector((state) => state.message);
   const [hasError, setOpenError] = useState(false);
 
@@ -31,11 +31,11 @@ export default function Login() {
     const invalidCheck = { ...invalidInputs };
 
     if (constants.EMAIL in inputNameOnChange) {
-      invalidCheck.email =
-        constants.EMAIL_REGEX.test(inputNameOnChange.email) &&
-        inputNameOnChange.email
+      invalidCheck.email = inputNameOnChange.email
+        ? constants.EMAIL_REGEX.test(inputNameOnChange.email)
           ? ""
-          : constants.EMAIL_ERROR;
+          : constants.EMAIL_ERROR
+        : "email is required";
     }
 
     if (constants.PASSWORD in inputNameOnChange) {
@@ -63,9 +63,10 @@ export default function Login() {
 
     if (!isValid()) return;
 
+    const path = localStorage.getItem("path");
     dispatch(login(loginData))
       .then(() => {
-        history.push(constants.WORKSPACES_URL);
+        path ? history.push(path) : history.push(constants.WORKSPACES_URL);
       })
       .catch(() => {
         setOpenError(true);
@@ -73,12 +74,17 @@ export default function Login() {
   };
 
   const handleLoginWithGG = (googleData) => {
+    const path = localStorage.getItem("path");
+
     dispatch(loginWithGG(googleData.profileObj))
       .then(() => {
-        history.push(constants.WORKSPACES_URL);
+        path ? history.push(path) : history.push(constants.WORKSPACES_URL);
       })
       .catch(() => {
         setOpenError(true);
+      })
+      .finally(() => {
+        setLoginGG(false);
       });
   };
 
@@ -90,7 +96,11 @@ export default function Login() {
         handleInputChange={handleInputChange}
         handleFormSubmit={handleFormSubmit}
         errors={invalidInputs}
+        setInvalidInputs={setInvalidInputs}
         handleLoginWithGG={handleLoginWithGG}
+        isLoading={isLoading}
+        isLoginGG={isLoginGG}
+        setLoginGG={setLoginGG}
       />
       {message && (
         <Message
@@ -98,10 +108,9 @@ export default function Login() {
           isOpen={hasError}
           handleCloseMessage={handleCloseError}
           type="error"
+          errorLogin={true}
         />
       )}
-
-      <Progress isOpen={isLoading} />
     </Fragment>
   );
 }

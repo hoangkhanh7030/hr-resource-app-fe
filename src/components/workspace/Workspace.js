@@ -13,30 +13,23 @@ import {
   MenuItem,
   IconButton,
   ThemeProvider,
-  Icon,
+  CardContent,
   Typography,
 } from "@material-ui/core";
 
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import { useStyles } from "./style";
-import { theme, commonStyle } from "assets/css/Common";
-import WorkspaceDialog from "./dialog/Dialog";
+import { theme } from "assets/css/Common";
 import AlertDialog from "components/common/AlertDialog";
 import { useHistory } from "react-router-dom";
-import { WORKSPACES_URL } from "constants/index";
+import analyze from "assets/images/analyze.png";
+import { WORKSPACES_URL, USERS_URL } from "constants/index";
 
 export default function Workspace(props) {
   const {
     workspace = {},
-    open = true,
-    openDelete = true,
-    content = {},
-    name = "",
+    openDelete = false,
     handleOpenDialog,
-    handleCloseDialog,
-    handleInputName,
-    error = "",
-    onHandleSubmit,
     handleCloseDeleteDialog,
     handleOpenDeleteDialog,
     handelDeleteWorkspace,
@@ -44,7 +37,6 @@ export default function Workspace(props) {
 
   const history = useHistory();
   const classes = useStyles();
-  const iconClasses = commonStyle();
 
   const noPermission = (workspace) => {
     return _.get(workspace, "role") !== "EDIT";
@@ -103,8 +95,9 @@ export default function Workspace(props) {
 
   return (
     <ThemeProvider theme={theme}>
-      <Card className={classes.root}>
+      <Card className={classes.root} elevation={0}>
         <CardHeader
+          className={classes.cardHeader}
           action={
             noPermission(workspace) ? (
               <></>
@@ -118,6 +111,7 @@ export default function Workspace(props) {
             <Typography
               variant="h2"
               onClick={() => accessWorkspacePage(workspace)}
+              className={classes.overflowWithDots}
             >
               {info.name}
             </Typography>
@@ -125,6 +119,10 @@ export default function Workspace(props) {
           subheader={subHeader}
           titleTypographyProps={{ variant: "h2" }}
         />
+        <CardContent className={classes.cardContent}>
+          <img src={analyze} alt="" height="auto" />
+        </CardContent>
+
         <Popper
           open={openOption}
           anchorEl={anchorRef.current}
@@ -141,33 +139,28 @@ export default function Workspace(props) {
                     autoFocusItem={openOption}
                     onKeyDown={handleListKeyDown}
                   >
-                    <MenuItem onClick={handleOpenDialog}>
-                      <Icon
-                        className={`${iconClasses.icon} fas fa-pen ${classes.icon}`}
-                      />
-                      Edit
+                    <MenuItem onClick={() => handleOpenDialog(workspace)}>
+                      Edit{" "}
                     </MenuItem>
-                    <WorkspaceDialog
-                      open={open}
-                      content={content}
-                      name={name}
-                      handleCloseDialog={handleCloseDialog}
-                      handleInputName={handleInputName}
-                      onHandleSubmit={onHandleSubmit}
-                      error={error}
-                    />
-                    <MenuItem onClick={handleOpenDeleteDialog}>
-                      <Icon
-                        className={`${iconClasses.icon} fas fa-trash ${classes.icon}`}
-                      />
-                      Delete
-                    </MenuItem>
+                    <MenuItem onClick={handleOpenDeleteDialog}>Delete</MenuItem>
                     <AlertDialog
                       open={openDelete}
-                      content={`Do you really want to delete ${name} workspace?`}
+                      content={`Do you really want to delete ${workspace.name} workspace?`}
                       handleCloseDialog={handleCloseDeleteDialog}
-                      handelDeleteWorkspace={handelDeleteWorkspace}
+                      handelActionDialog={handelDeleteWorkspace}
                     />
+                    <MenuItem
+                      onClick={() =>
+                        history.push(
+                          `${WORKSPACES_URL}/${_.get(
+                            workspace,
+                            "id"
+                          )}${USERS_URL}`
+                        )
+                      }
+                    >
+                      Manage Users
+                    </MenuItem>
                   </MenuList>
                 </ClickAwayListener>
               </Paper>

@@ -6,7 +6,7 @@ import {
   ThemeProvider,
 } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { theme } from "assets/css/Common";
 import { useStyles } from "./style";
@@ -18,40 +18,47 @@ import {
   updateWorkspace,
   deleteWorkspace,
 } from "redux/actions/workspaceAction";
-import * as constants from "constants/index";
 import Workspace from "components/workspace/Workspace";
 import WorkspaceDialog from "components/workspace/dialog/Dialog";
 import { Message } from "components/common/Message";
 import { Progress } from "components/common/Progress";
 import { clearMessage } from "redux/actions/msgAction";
-import {
-  CREATE_WORKSPACE_DIALOG,
-  EDIT_WORKSPACE_DIALOG,
-} from "components/common/Dialog";
+import { DEFAULT_WORKSPACE } from "constants/index";
 
 export default function Workspaces() {
   const classes = useStyles();
 
-  const { status, isLoading } = useSelector((state) => state.workspaces);
+  const { status } = useSelector((state) => state.workspaces);
   const { message } = useSelector((state) => state.message);
   const [isOpenMessage, setIsOpenMessage] = useState(false);
 
-  const [name, setName] = useState("");
-  const [openCreate, setOpenCreate] = useState(false);
-  const [openEdit, setOpenEdit] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
-  const [dialogError, setDialogError] = useState("");
+  const [workspace, setWorkspace] = useState(null);
 
   const dispatch = useDispatch();
 
   const [workspaces, setWorkspaces] = useState([]);
   const storeWorkspaces = useSelector((state) => state.workspaces);
+  const [isLoading, setLoading] = useState(false);
+  const isInitialMount = useRef(true);
 
+  const fetchWorkpaces = (loading = false) => {
+    if (loading) {
+      setLoading(true);
+      dispatch(getWorkspaces()).finally(() => setLoading(false));
+    } else dispatch(getWorkspaces());
+  };
   useEffect(() => {
     dispatch(clearMessage());
 
-    dispatch(getWorkspaces()).catch(() => setIsOpenMessage(true));
+    if (isInitialMount.current) {
+      fetchWorkpaces(true);
+      isInitialMount.current = false;
+    } else {
+      fetchWorkpaces();
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -62,20 +69,11 @@ export default function Workspaces() {
   }, [storeWorkspaces.data]);
 
   // handle workspace dialog
-  const handleCreateDialogState = () => {
-    setOpenCreate(!openCreate);
-    setName("");
-    setDialogError("");
+  const handleDialog = (workspace = null) => {
+    setWorkspace(!openDialog && workspace ? workspace : DEFAULT_WORKSPACE);
+    setOpenDialog(!openDialog);
   };
 
-  const handleOpenEditDialog = () => {
-    setOpenEdit(true);
-  };
-  const handleCloseEditDialog = () => {
-    setOpenEdit(false);
-    setName("");
-    setDialogError("");
-  };
   const handleOpenDeleteDialog = () => {
     setOpenDelete(true);
   };
@@ -83,20 +81,8 @@ export default function Workspaces() {
     setOpenDelete(false);
   };
 
-  const handleInputName = (e) => {
-    setDialogError(!e.target.value.trim() ? constants.EMPTY_ERROR : "");
-    setName(e.target.value);
-  };
-
   // handle create workspace
-  const handleCreateWorkspace = () => {
-    if (!name) {
-      setDialogError(constants.EMPTY_ERROR);
-      return;
-    }
-    const data = {
-      name,
-    };
+  const handleCreateWorkspace = (data) => {
     dispatch(addWorkspace(data))
       .then(() => {
         dispatch(getWorkspaces()).catch(() => {
@@ -107,22 +93,10 @@ export default function Workspaces() {
       .catch(() => {
         setIsOpenMessage(true);
       });
-
-    setName("");
-    setDialogError("");
-    setOpenCreate(false);
   };
 
   // handle edit workspace
-  const handleEditWorkspace = (id) => {
-    if (!name) {
-      setDialogError(constants.EMPTY_ERROR);
-      return;
-    }
-    const data = {
-      name,
-    };
-
+  const handleEditWorkspace = (id, data) => {
     dispatch(updateWorkspace(data, id))
       .then(() => {
         dispatch(getWorkspaces()).catch(() => {
@@ -133,10 +107,6 @@ export default function Workspaces() {
       .catch(() => {
         setIsOpenMessage(true);
       });
-
-    setName("");
-    setDialogError("");
-    setOpenEdit(false);
   };
 
   const handelDeleteWorkspace = (id) => {
@@ -168,33 +138,26 @@ export default function Workspaces() {
       </Typography>
       <Grid container spacing={5}>
         {workspaces &&
-          workspaces.map((workspace) => (
-            <Grid key={_.get(workspace, "id")} item xs={12} sm={4} md={3}>
-              <Workspace
-                workspace={workspace}
-                open={openEdit}
-                openDelete={openDelete}
-                content={EDIT_WORKSPACE_DIALOG}
-                name={_.get(workspace, "name")}
-                handleCloseDialog={handleCloseEditDialog}
-                handleOpenDialog={handleOpenEditDialog}
-                handleOpenDeleteDialog={handleOpenDeleteDialog}
-                handleCloseDeleteDialog={handleCloseDeleteDialog}
-                handleInputName={handleInputName}
-                error={dialogError}
-                onHandleSubmit={() =>
-                  handleEditWorkspace(_.get(workspace, "id"))
-                }
-                handelDeleteWorkspace={() =>
-                  handelDeleteWorkspace(_.get(workspace, "id"))
-                }
-              />
-            </Grid>
-          ))}
+          workspaces.map((workspace) =>
+            _.get(workspace, "role") !== "INACTIVE" ? (
+              <Grid key={_.get(workspace, "id")} item xs={12} sm={4} md={3}>
+                <Workspace
+                  workspace={workspace}
+                  openDelete={openDelete}
+                  handleOpenDialog={handleDialog}
+                  handleOpenDeleteDialog={handleOpenDeleteDialog}
+                  handleCloseDeleteDialog={handleCloseDeleteDialog}
+                  handelDeleteWorkspace={() =>
+                    handelDeleteWorkspace(_.get(workspace, "id"))
+                  }
+                />
+              </Grid>
+            ) : null
+          )}
 
         <Grid item xs={12} sm={4} md={3}>
-          <Paper className={classes.paper}>
-            <div onClick={handleCreateDialogState}>
+          <Paper className={classes.paper} elevation={0}>
+            <div onClick={() => handleDialog()}>
               <IconButton>
                 <AddIcon className={classes.addIcon} />
               </IconButton>
@@ -202,18 +165,22 @@ export default function Workspaces() {
             <Typography variant="h3" className={classes.newWorkspace}>
               NEW WORKSPACE
             </Typography>
-            <WorkspaceDialog
-              open={openCreate}
-              content={CREATE_WORKSPACE_DIALOG}
-              name={name}
-              handleCloseDialog={handleCreateDialogState}
-              handleInputName={handleInputName}
-              onHandleSubmit={handleCreateWorkspace}
-              error={dialogError}
-            />
           </Paper>
         </Grid>
       </Grid>
+      {openDialog ? (
+        <WorkspaceDialog
+          open={openDialog}
+          workspace={workspace}
+          workspaces={workspaces}
+          setWorkspace={setWorkspace}
+          handleCloseDialog={handleDialog}
+          handleAdd={handleCreateWorkspace}
+          handleEdit={handleEditWorkspace}
+        />
+      ) : (
+        <></>
+      )}
 
       {message && (
         <Message

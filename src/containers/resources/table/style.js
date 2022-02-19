@@ -53,7 +53,7 @@ export const useStyles = makeStyles({
     height: 25,
   },
   active: {
-    color: "#5586F6",
+    color: "#5586F6 !important",
     background: "#C3D4FC",
     border: "1px solid #5586F6",
   },
@@ -69,6 +69,8 @@ export const useToolbarStyles = makeStyles({
     background: colors.secondaryColor,
     border: `1px solid ${colors.borderColor}`,
     borderRadius: "5px 5px 0px 0px",
+    paddingTop: 15,
+    paddingBottom: 15,
     justifyContent: "space-between",
   },
   leftToolbar: {
@@ -94,6 +96,12 @@ export const useToolbarStyles = makeStyles({
     fontSize: 14,
   },
   selectInput: { margin: "0 10px" },
+  resetBtn: {
+    padding: `8px !important`,
+  },
+  import: {
+    display: "none",
+  },
 });
 
 export const useFooterStyles = makeStyles({
