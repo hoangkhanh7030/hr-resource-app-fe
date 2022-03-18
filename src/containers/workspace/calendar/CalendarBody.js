@@ -14,6 +14,8 @@ export default function CalendarBody({
   handleAddResource,
   setUploading,
   handleOpenDialog,
+  handleDeleteBookingDayOff,
+  isBookingNormal
 }) {
   const newTeams = _.isEmpty(teams) ? Array(2).fill({}) : teams;
   const [isOpenTeam, setOpenTeam] = useState(Array(2).fill(true));
@@ -55,6 +57,8 @@ export default function CalendarBody({
             resources={resources}
             handleDeleteBooking={handleDeleteBooking}
             handleOpenDialog={handleOpenDialog}
+            handleDeleteBookingDayOff={handleDeleteBookingDayOff}
+            isBookingNormal={isBookingNormal}
           />
         ) : (
           <></>

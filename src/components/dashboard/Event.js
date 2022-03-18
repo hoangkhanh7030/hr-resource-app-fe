@@ -96,6 +96,8 @@ export default function Event({
   resource = {},
   handleDeleteBooking,
   handleOpenDialog,
+  isBookingNormal,
+  handleDeleteBookingDayOff
 }) {
   const days = _.isEmpty(booking)
     ? 0
@@ -166,7 +168,7 @@ export default function Event({
         handlePopoverClose={handlePopoverClose}
         anchorEl={anchorEl}
         content={content}
-      />
+      />   
       <AlertDialog
         open={openDelete}
         content={`Do you really want to delete this booking?`}

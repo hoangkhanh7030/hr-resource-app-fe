@@ -11,8 +11,13 @@ import React, { useState } from "react";
 import * as _ from "underscore";
 import { StyledTableRow, StyledTableCell, useStyles } from "./style";
 export default function EnhancedTableRow(props) {
-  const { row, handleOpenDialog, handleDeleteProject, handleArchiveProject } =
-    props;
+  const {
+    row,
+    handleOpenDialog,
+    handleDeleteProject,
+    handleArchiveProject,
+    isTheView,
+  } = props;
   const classes = useStyles();
 
   const isArchived = _.get(row, IS_ARCHIVED);
@@ -47,6 +52,7 @@ export default function EnhancedTableRow(props) {
       <StyledTableCell align="center">
         {_.get(row, ["positionDTO", "name"])}
       </StyledTableCell>
+      <StyledTableCell align="center">{_.get(row, "vacation")}</StyledTableCell>
       <StyledTableCell align="center">
         <Button
           disabled
@@ -57,26 +63,29 @@ export default function EnhancedTableRow(props) {
           {isArchivedText}
         </Button>
       </StyledTableCell>
-      <StyledTableCell align="center">
-        <Tooltip title="edit">
-          <IconButton
-            className={`fas fa-pencil-alt`}
-            onClick={() => handleOpenDialog(row)}
-          ></IconButton>
-        </Tooltip>
-        <Tooltip title={isArchivedToolTip} arrow>
-          <IconButton
-            className={`${isArchivedStyle}`}
-            onClick={() => handleOpenArchiveDialog(_.get(row, "id"))}
-          ></IconButton>
-        </Tooltip>
-        <Tooltip title="delete">
-          <IconButton
-            className={`far fa-trash-alt`}
-            onClick={() => handleOpenDeleteDialog(_.get(row, "id"))}
-          ></IconButton>
-        </Tooltip>
-      </StyledTableCell>
+      {!isTheView && (
+        <StyledTableCell align="center">
+          <Tooltip title="edit">
+            <IconButton
+              className={`fas fa-pencil-alt`}
+              onClick={() => handleOpenDialog(row)}
+            ></IconButton>
+          </Tooltip>
+          <Tooltip title={isArchivedToolTip} arrow>
+            <IconButton
+              className={`${isArchivedStyle}`}
+              onClick={() => handleOpenArchiveDialog(_.get(row, "id"))}
+            ></IconButton>
+          </Tooltip>
+          <Tooltip title="delete">
+            <IconButton
+              className={`far fa-trash-alt`}
+              onClick={() => handleOpenDeleteDialog(_.get(row, "id"))}
+            ></IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      )}
+
       <AlertDialog
         open={openDeleteDialog}
         content={`Do you really want to delete this resource?`}

@@ -49,12 +49,18 @@ export default function BookingDialog(props) {
     setResourceSearch,
     handleAddBooking,
     handleEditBooking,
+    bookingNormal,
+    handleAddDayOff,
+    handleEditDayOff,
+    bookingOff = {},
+    setBookingOff,
   } = props;
+  console.log("booking off",{bookingOff})
 
   const btnLoading = useSelector((state) => state.booking.isLoading);
 
-  const oldPercentage = booking.percentage;
-  const oldDuration = booking.duration;
+  const oldPercentage = booking?.percentage;
+  const oldDuration = booking?.duration;
   const { id } = useParams();
   const dispatch = useDispatch();
 
@@ -161,8 +167,29 @@ export default function BookingDialog(props) {
       percentage: tabValue === 0 ? booking.percentage : "",
       duration: tabValue === 1 ? booking.duration : "",
     };
+    console.log(booking.percentage);
+    console.log(tabValue);
+    console.log(data);
     booking.id ? handleEditBooking(data) : handleAddBooking(data);
   };
+
+  const handleSubmitDayoff = () =>{
+    if (!Boolean(bookingOff.resourceId && !dateMessage)) {
+      setInvalidValue({
+        ...invalidValue,
+        resourceId: !bookingOff.resourceId ? RESOURCE_ID : "",
+      });
+
+      return;
+    }
+    const data = {
+      ...bookingOff,
+      startDate: bookingOff.startDate.format("YYYY-MM-DD"),
+      endDate: bookingOff.endDate.format("YYYY-MM-DD"),
+      
+    };
+    bookingOff.id ? handleEditDayOff(data) : handleAddDayOff(data);
+  }
 
   const handleCreateProject = (project) => {
     dispatch(addProject(id, project)).then(() => {
@@ -204,106 +231,182 @@ export default function BookingDialog(props) {
 
   return (
     <>
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        fullWidth
-        maxWidth="xs"
-      >
-        <DialogTitle onClose={handleCloseDialog}>
-          {booking.id ? "Edit Booking" : "New Booking"}
-        </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={1}>
-            <Grid item xs={6}>
-              <CustomizedDatePicker
-                classes={classes}
-                title={START_DATE}
-                dateValue={booking.startDate}
-                handleDateChange={handleStartDateChange}
-                dateMessage={dateMessage}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <CustomizedDatePicker
-                classes={classes}
-                title={END_DATE}
-                dateValue={booking.endDate}
-                startDate={booking.startDate}
-                handleDateChange={handleEndDateChange}
-              />
-            </Grid>
-            {!dateMessage ? (
-              <></>
-            ) : (
-              <Grid item xs={12} className={classes.errorText}>
-                {
-                  <HelperText
-                    dateError={classes.dateError}
-                    message={dateMessage}
-                  />
-                }
+      {bookingNormal == false ? (
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle onClose={handleCloseDialog}>
+            {bookingOff.id ? "Edit Day OFF" : "New Day OFF"}
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={1}>
+              <Grid item xs={6}>
+                <CustomizedDatePicker
+                  classes={classes}
+                  title={START_DATE}
+                  dateValue={bookingOff.startDate}
+                  handleDateChange={handleStartDateChange}
+                  dateMessage={dateMessage}
+                />
               </Grid>
-            )}
-          </Grid>
+              <Grid item xs={6}>
+                <CustomizedDatePicker
+                  classes={classes}
+                  title={END_DATE}
+                  dateValue={bookingOff.endDate}
+                  startDate={bookingOff.startDate}
+                  handleDateChange={handleEndDateChange}
+                />
+              </Grid>
+              {!dateMessage ? (
+                <></>
+              ) : (
+                <Grid item xs={12} className={classes.errorText}>
+                  {
+                    <HelperText
+                      dateError={classes.dateError}
+                      message={dateMessage}
+                    />
+                  }
+                </Grid>
+              )}
+            </Grid>
+            <CustomizedSelect
+              classes={classes}
+              name={RESOURCE_ID}
+              selectValue={bookingOff.resourceId}
+              items={resources}
+              searchName={resourceSearch}
+              setSearchName={setResourceSearch}
+              handleChangeSelectItem={handleChangeSelectItem}
+              invalidStyle={invalidValue.resourceId === RESOURCE_ID}
+              errorName={RESOURCE_ID}
+              errorValue={invalidValue.resourceId}
+              handleOpenDialog={handleOpenRscDialog}
+            />
+          </DialogContent>
 
-          <CustomizedTab
-            classes={classes}
-            tabValue={tabValue}
-            percentage={booking.percentage}
-            duration={booking.duration}
-            startDate={booking.startDate}
-            endDate={booking.endDate}
-            handleChangeTab={handleChangeTab}
-            handleChangeTabInput={handleChangeTabInput}
-            isMulti={booking.isMulti}
-            workDays={workDays}
-          />
+          <DialogActions className={classes.dialogActions}>
+            <Button variant="outlined" onClick={handleCloseDialog}>
+              Cancel
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              disableElevation
+              onClick={handleSubmitDayoff}
+              disabled={btnLoading}
+            >
+              {bookingOff.id ? "Update" : "Confirm"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      ) : (
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle onClose={handleCloseDialog}>
+            {booking.id ? "Edit Booking" : "New Booking"}
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={1}>
+              <Grid item xs={6}>
+                <CustomizedDatePicker
+                  classes={classes}
+                  title={START_DATE}
+                  dateValue={booking.startDate}
+                  handleDateChange={handleStartDateChange}
+                  dateMessage={dateMessage}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <CustomizedDatePicker
+                  classes={classes}
+                  title={END_DATE}
+                  dateValue={booking.endDate}
+                  startDate={booking.startDate}
+                  handleDateChange={handleEndDateChange}
+                />
+              </Grid>
+              {!dateMessage ? (
+                <></>
+              ) : (
+                <Grid item xs={12} className={classes.errorText}>
+                  {
+                    <HelperText
+                      dateError={classes.dateError}
+                      message={dateMessage}
+                    />
+                  }
+                </Grid>
+              )}
+            </Grid>
 
-          <CustomizedSelect
-            classes={classes}
-            name={PROJECT_ID}
-            selectValue={booking.projectId}
-            items={projects}
-            searchName={projectSearch}
-            setSearchName={setProjectSearch}
-            handleChangeSelectItem={handleChangeSelectItem}
-            invalidStyle={invalidValue.projectId === PROJECT_ID}
-            errorName={PROJECT_ID}
-            errorValue={invalidValue.projectId}
-            handleOpenDialog={handleOpenPrjDialog}
-          />
+            <CustomizedTab
+              classes={classes}
+              tabValue={tabValue}
+              percentage={booking.percentage}
+              duration={booking.duration}
+              startDate={booking.startDate}
+              endDate={booking.endDate}
+              handleChangeTab={handleChangeTab}
+              handleChangeTabInput={handleChangeTabInput}
+              isMulti={booking.isMulti}
+              workDays={workDays}
+            />
 
-          <CustomizedSelect
-            classes={classes}
-            name={RESOURCE_ID}
-            selectValue={booking.resourceId}
-            items={resources}
-            searchName={resourceSearch}
-            setSearchName={setResourceSearch}
-            handleChangeSelectItem={handleChangeSelectItem}
-            invalidStyle={invalidValue.resourceId === RESOURCE_ID}
-            errorName={RESOURCE_ID}
-            errorValue={invalidValue.resourceId}
-            handleOpenDialog={handleOpenRscDialog}
-          />
-        </DialogContent>
+            <CustomizedSelect
+              classes={classes}
+              name={PROJECT_ID}
+              selectValue={booking.projectId}
+              items={projects}
+              searchName={projectSearch}
+              setSearchName={setProjectSearch}
+              handleChangeSelectItem={handleChangeSelectItem}
+              invalidStyle={invalidValue.projectId === PROJECT_ID}
+              errorName={PROJECT_ID}
+              errorValue={invalidValue.projectId}
+              handleOpenDialog={handleOpenPrjDialog}
+            />
 
-        <DialogActions className={classes.dialogActions}>
-          <Button variant="outlined" onClick={handleCloseDialog}>
-            Cancel
-          </Button>
-          <Button
-            color="primary"
-            variant="contained"
-            disableElevation
-            onClick={handleSubmitDialog}
-            disabled={btnLoading}
-          >
-            {booking.id ? "Update" : "Confirm"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <CustomizedSelect
+              classes={classes}
+              name={RESOURCE_ID}
+              selectValue={booking.resourceId}
+              items={resources}
+              searchName={resourceSearch}
+              setSearchName={setResourceSearch}
+              handleChangeSelectItem={handleChangeSelectItem}
+              invalidStyle={invalidValue.resourceId === RESOURCE_ID}
+              errorName={RESOURCE_ID}
+              errorValue={invalidValue.resourceId}
+              handleOpenDialog={handleOpenRscDialog}
+            />
+          </DialogContent>
+
+          <DialogActions className={classes.dialogActions}>
+            <Button variant="outlined" onClick={handleCloseDialog}>
+              Cancel
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              disableElevation
+              onClick={handleSubmitDialog}
+              disabled={btnLoading}
+            >
+              {booking.id ? "Update" : "Confirm"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
       <FormDialog
         project={project}
         setProject={setProject}
@@ -316,7 +419,6 @@ export default function BookingDialog(props) {
         }}
         dialogStyle={true}
         projects={projects}
-
       />
 
       <ResourceDialog

@@ -16,6 +16,8 @@ const Events = ({
   view,
   handleDeleteBooking,
   handleOpenDialog,
+  handleDeleteBookingDayOff,
+  isBookingNormal
 }) => {
   return _.isEmpty(resource)
     ? null
@@ -31,6 +33,8 @@ const Events = ({
               resource={resource}
               handleDeleteBooking={handleDeleteBooking}
               handleOpenDialog={handleOpenDialog}
+              handleDeleteBookingDayOff={handleDeleteBookingDayOff}
+              isBookingNormal={isBookingNormal}
             />
           ))
       );

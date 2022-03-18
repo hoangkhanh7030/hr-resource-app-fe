@@ -4,12 +4,13 @@ import {
   RESOURCE_NAME,
   STATUS_NAME,
   TEAM_NAME,
+  VACATION_NAME,
 } from "constants/index";
 import React from "react";
 import { StyledTableCell } from "./style";
 
 export default function EnhancedTableHead(props) {
-  const { classes, handleSort, sortName = "" } = props;
+  const { classes, handleSort, sortName = "", isTheView } = props;
 
   return (
     <TableHead className={classes.headRoot}>
@@ -17,12 +18,14 @@ export default function EnhancedTableHead(props) {
         <StyledTableCell align="center" width="10%">
           Avatar
         </StyledTableCell>
-        <StyledTableCell align="left" width="26%">
+        <StyledTableCell align="left" width="15%">
           <Typography variant="h3" className={`${classes.flex}`}>
             Name
             <IconButton
               className={`fas fa-sort ${classes.sortIcon}`}
-              style={{ color: sortName === RESOURCE_NAME ? "black" : "#CECECE" }}
+              style={{
+                color: sortName === RESOURCE_NAME ? "black" : "#CECECE",
+              }}
               onClick={() => handleSort(RESOURCE_NAME)}
             ></IconButton>
           </Typography>
@@ -42,8 +45,22 @@ export default function EnhancedTableHead(props) {
             Position
             <IconButton
               className={`fas fa-sort ${classes.rightSortIcon}`}
-              style={{ color: sortName === POSITION_NAME ? "black" : "#CECECE" }}
+              style={{
+                color: sortName === POSITION_NAME ? "black" : "#CECECE",
+              }}
               onClick={() => handleSort(POSITION_NAME)}
+            ></IconButton>
+          </Typography>
+        </StyledTableCell>
+        <StyledTableCell width="11%">
+          <Typography variant="h3" className={`${classes.titleCenter}`}>
+            Vacation
+            <IconButton
+              className={`fas fa-sort ${classes.rightSortIcon}`}
+              style={{
+                color: sortName === VACATION_NAME ? "black" : "#CECECE",
+              }}
+              onClick={() => handleSort(VACATION_NAME)}
             ></IconButton>
           </Typography>
         </StyledTableCell>
@@ -57,9 +74,11 @@ export default function EnhancedTableHead(props) {
             ></IconButton>
           </Typography>
         </StyledTableCell>
-        <StyledTableCell align="center" width="12%">
-          Actions
-        </StyledTableCell>
+        {!isTheView && (
+          <StyledTableCell align="center" width="12%">
+            Actions
+          </StyledTableCell>
+        )}
       </TableRow>
     </TableHead>
   );

@@ -19,12 +19,13 @@ import { PROJECT_NAME, CLIENT_NAME, IS_ACTIVATED } from "constants/index";
 const ProjectsTable = ({
   rows = [],
   emptyRows = 5,
-  sortName="",
+  sortName = "",
   handleSort,
   isLoading,
   handleOpenDialog,
   handleDeleteProject,
   handleArchiveProject,
+  isTheView,
 }) => {
   const classes = useStyles({ emptyRows });
 
@@ -38,7 +39,9 @@ const ProjectsTable = ({
                 Project Name
                 <IconButton
                   className={`${classes.tableTitleIcon} fas fa-sort`}
-                  style={{ color: sortName === PROJECT_NAME ? "black" : "#CECECE" }}
+                  style={{
+                    color: sortName === PROJECT_NAME ? "black" : "#CECECE",
+                  }}
                   onClick={() => handleSort(PROJECT_NAME)}
                 ></IconButton>
               </Typography>
@@ -48,7 +51,9 @@ const ProjectsTable = ({
                 Client Name
                 <IconButton
                   className={`${classes.tableTitleIcon} ${classes.tableTitleIconCenter} fas fa-sort`}
-                  style={{ color: sortName === CLIENT_NAME ? "black" : "#CECECE" }}
+                  style={{
+                    color: sortName === CLIENT_NAME ? "black" : "#CECECE",
+                  }}
                   onClick={() => handleSort(CLIENT_NAME)}
                 ></IconButton>
               </Typography>
@@ -58,14 +63,18 @@ const ProjectsTable = ({
                 Status
                 <IconButton
                   className={`${classes.tableTitleIcon} ${classes.tableTitleIconCenter} fas fa-sort`}
-                  style={{ color: sortName === IS_ACTIVATED ? "black" : "#CECECE" }}
+                  style={{
+                    color: sortName === IS_ACTIVATED ? "black" : "#CECECE",
+                  }}
                   onClick={() => handleSort(IS_ACTIVATED)}
                 ></IconButton>
               </Typography>
             </StyledTableCell>
-            <StyledTableCell width="15%" align="center">
-              Actions
-            </StyledTableCell>
+            {!isTheView && (
+              <StyledTableCell width="15%" align="center">
+                Actions
+              </StyledTableCell>
+            )}
           </TableRow>
         </TableHead>
 
@@ -81,6 +90,7 @@ const ProjectsTable = ({
                   handleOpenDialog={handleOpenDialog}
                   handleDeleteProject={handleDeleteProject}
                   handleArchiveProject={handleArchiveProject}
+                  isTheView = {isTheView}
                 />
               ))}
 

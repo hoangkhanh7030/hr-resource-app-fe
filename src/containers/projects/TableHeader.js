@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Button, Box } from "@material-ui/core";
 
@@ -21,6 +21,7 @@ export default function ProjectsHeader({
   handleReset,
   handleImportProjects,
   handleExportProjects,
+  isTheView,
 }) {
   const classes = useStyles();
 
@@ -43,7 +44,7 @@ export default function ProjectsHeader({
           className={classes.searchbar}
           onCancelSearch={cancelSearch}
           onKeyUp={keyUp}
-          onChange={(newValue)=> setSearched(newValue)}
+          onChange={(newValue) => setSearched(newValue)}
         />
         <StatusFilter
           status={status}
@@ -51,27 +52,28 @@ export default function ProjectsHeader({
         />
         <ResetBtn onClick={handleReset} />
       </Box>
-
-      <Box>
-        <MoreOptions
-          anchorEl={anchorEl}
-          setAnchorEl={setAnchorEl}
-          handleClickOption={handleClickOption}
-          handleCloseOption={handleCloseOption}
-          handleImportProjects={handleImportProjects}
-          handleExportProjects={handleExportProjects}
-        />
-
-        <Button
-          color="primary"
-          variant="contained"
-          disableElevation
-          className={classes.button}
-          onClick={() => handleOpenDialog()}
-        >
-          New Project
-        </Button>
-      </Box>
+      {!isTheView && (
+        <Box>
+          <MoreOptions
+            anchorEl={anchorEl}
+            setAnchorEl={setAnchorEl}
+            handleClickOption={handleClickOption}
+            handleCloseOption={handleCloseOption}
+            handleImportProjects={handleImportProjects}
+            handleExportProjects={handleExportProjects}
+            isTheView={isTheView}
+          />
+          <Button
+            color="primary"
+            variant="contained"
+            disableElevation
+            className={classes.button}
+            onClick={() => handleOpenDialog()}
+          >
+            New Project
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }

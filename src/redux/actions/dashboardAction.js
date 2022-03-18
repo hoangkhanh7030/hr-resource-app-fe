@@ -5,6 +5,7 @@ import {
   getBookingsService,
   deleteBookingService,
   renameTeamService,
+  deleteBookingDayOffService
 } from "services/dashboard-service";
 
 export const getBookings = (id, params) => (dispatch) => {
@@ -59,6 +60,40 @@ export const deleteBooking = (id, bookingId) => (dispatch) => {
       const message = _.get(error, ["response", "data", "error"]);
       dispatch({
         type: actionTypes.DELETE_BOOKING_FAILED,
+      });
+
+      dispatch({
+        type: actionTypes.SET_MESSAGE,
+        payload: message,
+      });
+
+      return Promise.reject();
+    }
+  );
+};
+
+export const deleteBookingDayOff = (id, bookingId) => (dispatch) => {
+  dispatch({
+    type: actionTypes.DELETE_BOOKING_DAYOFF,
+  });
+
+  return deleteBookingDayOffService(id, bookingId).then(
+    (data) => {
+      dispatch({
+        type: actionTypes.DELETE_BOOKING_DAYOFF_SUCCEED,
+        payload: data,
+      });
+
+      dispatch({
+        type: actionTypes.SET_MESSAGE,
+        payload: _.get(data, "message"),
+      });
+      return Promise.resolve();
+    },
+    (error) => {
+      const message = _.get(error, ["response", "data", "error"]);
+      dispatch({
+        type: actionTypes.DELETE_BOOKING_DAYOFF_FAILED,
       });
 
       dispatch({

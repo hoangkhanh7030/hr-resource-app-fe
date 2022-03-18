@@ -32,6 +32,7 @@ export default function TableToolbar(props) {
     handleExportResources,
     handleImportResources,
     handleSettingsDialog,
+    isTheView,
   } = props;
   const classes = useToolbarStyles();
 
@@ -82,64 +83,66 @@ export default function TableToolbar(props) {
           </FormControl>
           <ResetBtn resetBtn={classes.resetBtn} onClick={handleReset} />
         </Box>
-        <Box>
-          <Button
-            onClick={handleClick}
-            variant="outlined"
-            endIcon={<ArrowDropDownIcon />}
-            className={classes.moreBtn}
-          >
-            More
-          </Button>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-            getContentAnchorEl={null}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            transformOrigin={{ vertical: "top", horizontal: "center" }}
-            elevation={5}
-          >
-            <MenuItem>
-              <Button
-                component="span"
-                onClick={() => {
-                  handleSettingsDialog();
-                  handleClose();
-                }}
-              >
-                Settings
-              </Button>
-            </MenuItem>
+        {!isTheView && (
+          <Box>
+            <Button
+              onClick={handleClick}
+              variant="outlined"
+              endIcon={<ArrowDropDownIcon />}
+              className={classes.moreBtn}
+            >
+              More
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+              getContentAnchorEl={null}
+              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
+              elevation={5}
+            >
+              <MenuItem>
+                <Button
+                  component="span"
+                  onClick={() => {
+                    handleSettingsDialog();
+                    handleClose();
+                  }}
+                >
+                  Settings
+                </Button>
+              </MenuItem>
 
-            <MenuItem style={{ paddingLeft: "0px !important" }}>
-              <label htmlFor="btn-upload">
-                <TextField
-                  type="file"
-                  id="btn-upload"
-                  name="btn-upload"
-                  onChange={onFileSelect}
-                  className={classes.import}
-                />
-                <Button component="span">Import</Button>
-              </label>
-            </MenuItem>
+              <MenuItem style={{ paddingLeft: "0px !important" }}>
+                <label htmlFor="btn-upload">
+                  <TextField
+                    type="file"
+                    id="btn-upload"
+                    name="btn-upload"
+                    onChange={onFileSelect}
+                    className={classes.import}
+                  />
+                  <Button component="span">Import</Button>
+                </label>
+              </MenuItem>
 
-            <MenuItem>
-              <Button component="span" onClick={handleExportResources}>
-                Export
-              </Button>
-            </MenuItem>
-          </Menu>
-          <Button
-            variant="contained"
-            color="primary"
-            disableElevation
-            onClick={() => handleOpenDialog()}
-          >
-            New resource
-          </Button>
-        </Box>
+              <MenuItem>
+                <Button component="span" onClick={handleExportResources}>
+                  Export
+                </Button>
+              </MenuItem>
+            </Menu>
+            <Button
+              variant="contained"
+              color="primary"
+              disableElevation
+              onClick={() => handleOpenDialog()}
+            >
+              New resource
+            </Button>
+          </Box>
+        )}
       </Toolbar>
     </ThemeProvider>
   );

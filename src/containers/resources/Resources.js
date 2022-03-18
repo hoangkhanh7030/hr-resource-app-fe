@@ -50,7 +50,7 @@ export default function Resources() {
 
   const [resources, setResources] = useState([]);
   const storeResources = useSelector((state) => state.resources);
-
+  const storeWorkspaces = useSelector((state) => state.workspaces);
   const { message } = useSelector((state) => state.message);
   const [openMessage, setOpenMessage] = useState(false);
 
@@ -74,6 +74,17 @@ export default function Resources() {
 
   const [isLoading, setLoading] = useState(false);
   const isInitialMount = useRef(true);
+
+  const [isTheView,setIsTheView] = useState();
+  useEffect(() => {
+    
+    setIsTheView(checkIsTheView(id,storeWorkspaces.data));
+  }, [id,storeWorkspaces.data]);
+  const checkIsTheView = (id,storeWorkspaces) => {
+    return storeWorkspaces.some(function(element){
+        return element.id == id && element.role == "VIEW";
+    });
+  };
 
   const handleOpenDialog = (resource = null) => {
     setResource(
@@ -338,6 +349,7 @@ export default function Resources() {
         handleExportResources={handleExportResources}
         handleImportResources={handleImportResources}
         handleSettingsDialog={handleOpenSettingsDialog}
+        isTheView = {isTheView}
       />
       <ResourcesTable
         data={resources}
@@ -348,6 +360,7 @@ export default function Resources() {
         handleOpenDialog={handleOpenDialog}
         handelDeleteResource={handelDeleteResource}
         callApiArchiveResource={callApiArchiveResource}
+        isTheView = {isTheView}
       />
       <TableFooter
         page={params.page}

@@ -19,6 +19,7 @@ export default function ProjectRow({
   handleOpenDialog,
   handleDeleteProject,
   handleArchiveProject,
+  isTheView,
 }) {
   const projectName = _.get(project, PROJECT_NAME);
   const projectColor = _.get(project, "color");
@@ -67,26 +68,28 @@ export default function ProjectRow({
           {isActivatedText}
         </Button>
       </StyledTableCell>
-      <StyledTableCell align="center">
-        <Tooltip title="edit" arrow>
-          <IconButton
-            className={`fas fa-pencil-alt ${commonClasses.action}`}
-            onClick={() => handleOpenDialog(project)}
-          ></IconButton>
-        </Tooltip>
-        <Tooltip title={isActivatedToolTip} arrow>
-          <IconButton
-            className={`${commonClasses.action} ${classes.midIcon} ${isActivatedStyle}`}
-            onClick={handleOpenArchiveDialog}
-          ></IconButton>
-        </Tooltip>
-        <Tooltip title="delete" arrow>
-          <IconButton
-            className={`far fa-trash-alt ${commonClasses.action}`}
-            onClick={handleOpenDeleteDialog}
-          ></IconButton>
-        </Tooltip>
-      </StyledTableCell>
+      {!isTheView && (
+        <StyledTableCell align="center">
+          <Tooltip title="edit" arrow>
+            <IconButton
+              className={`fas fa-pencil-alt ${commonClasses.action}`}
+              onClick={() => handleOpenDialog(project)}
+            ></IconButton>
+          </Tooltip>
+          <Tooltip title={isActivatedToolTip} arrow>
+            <IconButton
+              className={`${commonClasses.action} ${classes.midIcon} ${isActivatedStyle}`}
+              onClick={handleOpenArchiveDialog}
+            ></IconButton>
+          </Tooltip>
+          <Tooltip title="delete" arrow>
+            <IconButton
+              className={`far fa-trash-alt ${commonClasses.action}`}
+              onClick={handleOpenDeleteDialog}
+            ></IconButton>
+          </Tooltip>
+        </StyledTableCell>
+      )}
 
       <AlertDialog
         open={openDeleteDialog}
@@ -98,7 +101,9 @@ export default function ProjectRow({
         open={openArchiveDialog}
         content={`Do you really want to ${isActivatedToolTip} ${projectName} project?`}
         handleCloseDialog={handleCloseArchiveDialog}
-        handelActionDialog={() => handleArchiveProject(_.get(project, "id"),handleCloseArchiveDialog)}
+        handelActionDialog={() =>
+          handleArchiveProject(_.get(project, "id"), handleCloseArchiveDialog)
+        }
         btnText={isActivatedToolTip}
       />
     </StyledTableRow>

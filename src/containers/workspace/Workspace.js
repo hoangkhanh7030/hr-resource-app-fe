@@ -23,6 +23,7 @@ import {
   getBookings,
   deleteBooking,
   renameTeam,
+  deleteBookingDayOff
 } from "redux/actions/dashboardAction";
 
 import { theme } from "assets/css/Common";
@@ -31,11 +32,17 @@ import { addResource } from "redux/actions/resourceAction";
 import { getUsers } from "redux/actions/userAction";
 
 import BookingDialog from "./dialog/BookingDialog";
-import { addBooking, editBooking } from "redux/actions/bookingAction";
+import {
+  addBooking,
+  addDayOff,
+  editBooking,
+  editDayOff,
+} from "redux/actions/bookingAction";
 import { getProjectsBooking } from "redux/actions/projectAction";
 import { getResourcesBooking } from "redux/actions/resourceAction";
 import {
   DEFAULT_BOOKING,
+  DEFAULT_BOOKING_OFF,
   RESOURCES_URL,
   USER,
   WORKSPACES_URL,
@@ -61,8 +68,11 @@ export default function Workspace() {
 
   const classes = useStyles({ view });
 
+  const [isBookingNormal, setIsBookingNomar] = useState(true);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [booking, setBooking] = useState(null);
+  const [bookingOff, setBookingOff] = useState(null);
 
   const storeResources = useSelector((state) => state.resources);
   const storeProjects = useSelector((state) => state.projects);
@@ -161,6 +171,16 @@ export default function Workspace() {
         setOpenMessage(false);
       });
   };
+  const handleDeleteBookingDayOff = (bookingId) => {
+    dispatch(deleteBookingDayOff(id, bookingId))
+      .then(() => {
+        setOpenMessage(true);
+        fetchBookings(calendar);
+      })
+      .catch(() => {
+        setOpenMessage(false);
+      });
+  };
 
   const handleAddResource = (id, resource) => {
     dispatch(addResource(id, resource))
@@ -223,25 +243,65 @@ export default function Workspace() {
     selectedDays = []
   ) => {
     setSelectedDays(selectedDays);
-    setBooking(
-      booking && startDate
-        ? {
-            id: _.get(booking, "id"),
-            startDate: moment(_.get(booking, "startDate")),
-            endDate: moment(_.get(booking, "endDate")),
-            projectId: _.get(booking, ["projectDTO", "id"]),
-            resourceId: resourceId,
-            percentage: _.get(booking, "percentage"),
-            duration: _.get(booking, "duration"),
-          }
-        : {
-            ...DEFAULT_BOOKING,
-            startDate: startDate.isBefore(endDate) ? startDate : endDate,
-            endDate: endDate.isAfter(startDate) ? endDate : startDate,
-            resourceId,
-            isMulti: selectedDays.length > 1,
-          }
-    );
+    if (isBookingNormal == true) {
+      setBooking(
+        booking && startDate
+          ? {
+              id: _.get(booking, "id"),
+              startDate: moment(_.get(booking, "startDate")),
+              endDate: moment(_.get(booking, "endDate")),
+              projectId: _.get(booking, ["projectDTO", "id"]),
+              resourceId: resourceId,
+              percentage: _.get(booking, "percentage"),
+              duration: _.get(booking, "duration"),
+            }
+          : {
+              ...DEFAULT_BOOKING,
+              startDate: startDate.isBefore(endDate) ? startDate : endDate,
+              endDate: endDate.isAfter(startDate) ? endDate : startDate,
+              resourceId,
+              isMulti: selectedDays.length > 1,
+            }
+      );
+    } else {
+      console.log({bookingOff});
+      if(bookingOff?.id && startDate){
+        console.log('edit')
+        setBookingOff({
+          id: _.get(bookingOff, "id"),
+              startDate: moment(_.get(bookingOff, "startDate")),
+              endDate: moment(_.get(bookingOff, "endDate")),
+              resourceId: resourceId,
+        });
+      }else{
+        console.log("add");
+        setBookingOff({
+          ...DEFAULT_BOOKING_OFF,
+              startDate: startDate.isBefore(endDate) ? startDate : endDate,
+              endDate: endDate.isAfter(startDate) ? endDate : startDate,
+              resourceId,
+              status: false,
+              isMulti: selectedDays.length > 1,
+        });
+      }
+      // setBookingOff(
+      //   bookingOff && startDate
+      //     ? {
+      //         id: _.get(bookingOff, "id"),
+      //         startDate: moment(_.get(bookingOff, "startDate")),
+      //         endDate: moment(_.get(bookingOff, "endDate")),
+      //         resourceId: resourceId,
+      //       }
+      //     : {
+      //         ...DEFAULT_BOOKING_OFF,
+      //         startDate: timeStart,
+      //         endDate: timeEnd,
+      //         resourceId,
+      //         status: false,
+      //         isMulti: selectedDays.length > 1,
+      //       }
+      // );
+    }
 
     setOpenDialog(true);
   };
@@ -257,8 +317,30 @@ export default function Workspace() {
         setOpenMessage(true);
       });
   };
+  const handleAddDayOff = (data) => {
+    dispatch(addDayOff(id, data))
+      .then(() => {
+        handleCloseDialog();
+        setOpenMessage(true);
+        fetchBookings(calendar);
+      })
+      .catch(() => {
+        setOpenMessage(true);
+      });
+  };
   const handleEditBooking = (data) => {
     dispatch(editBooking(id, data))
+      .then(() => {
+        setOpenDialog(false);
+        setOpenMessage(true);
+        fetchBookings(calendar);
+      })
+      .catch(() => {
+        setOpenMessage(true);
+      });
+  };
+  const handleEditDayOff = (data) => {
+    dispatch(editDayOff(id, data))
       .then(() => {
         setOpenDialog(false);
         setOpenMessage(true);
@@ -318,6 +400,8 @@ export default function Workspace() {
         setSearched={setSearched}
         keyUp={keyUp}
         cancelSearch={cancelSearch}
+        bookingNormal={isBookingNormal}
+        setBookingNormal={setIsBookingNomar}
       />
 
       <Box className={classes.calendar}>
@@ -339,6 +423,8 @@ export default function Workspace() {
             handleAddResource={handleAddResource}
             setUploading={setUploading}
             handleOpenDialog={handleOpenDialog}
+            handleDeleteBookingDayOff={handleDeleteBookingDayOff}
+            isBookingNormal={isBookingNormal}
           />
         </Grid>
       </Box>
@@ -351,6 +437,8 @@ export default function Workspace() {
             []
           )}
           setBooking={setBooking}
+          bookingOff={bookingOff}
+          setBookingOff={setBookingOff}
           handleCloseDialog={handleCloseDialog}
           projects={prjList}
           resources={rscList}
@@ -360,6 +448,9 @@ export default function Workspace() {
           setProjectSearch={setProjectSearch}
           resourceSearch={resourceSearch}
           setResourceSearch={setResourceSearch}
+          bookingNormal={isBookingNormal}
+          handleAddDayOff={handleAddDayOff}
+          handleEditDayOff={handleEditDayOff}
         />
       ) : (
         <></>

@@ -86,14 +86,14 @@ export default function TheHeader() {
     { name: "DASHBOARD", style: `${commonClasses.icon} far fa-calendar` },
     { name: "PROJECTS", style: `${commonClasses.icon} far fa-map` },
     { name: "RESOURCES", style: `${commonClasses.icon} far fa-user` },
-    // { name: "REPORT", style: `${commonClasses.icon} far fa-file-alt` },
+    { name: "REPORT", style: `${commonClasses.icon} far fa-file-alt` },
   ];
 
   const tabNameToIndex = {
     0: `${WORKSPACES_URL}/${id}`,
     1: `${WORKSPACES_URL}/${id}${PROJECTS_URL}`,
     2: `${WORKSPACES_URL}/${id}${RESOURCES_URL}`,
-    // 3: `${WORKSPACES_URL}/${id}${REPORT_URL}`,
+    3: `${WORKSPACES_URL}/${id}${REPORT_URL}`,
   };
 
   const indexToTabName = {

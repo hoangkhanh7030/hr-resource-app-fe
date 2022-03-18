@@ -25,13 +25,15 @@ export default function Header({
   setSearched,
   keyUp,
   cancelSearch,
+  bookingNormal,
+  setBookingNormal,
 }) {
   const classes = useStyles();
 
   const startDay = _.isEmpty(calendar) ? "" : _.first(calendar).format(DMY);
   const endDay = _.isEmpty(calendar) ? "" : _.last(calendar).format(DMY);
   const rangeDays = `${startDay} - ${endDay}`;
-
+  console.log(bookingNormal);
   function prevWeek() {
     return today.clone().subtract(view, WEEK);
   }
@@ -73,6 +75,14 @@ export default function Header({
       </Box>
 
       <Box className={classes.actionBox}>
+      <Button
+          variant="outlined"
+          margin="dense"
+          className={classes.todayButton}
+          onClick={() => setBookingNormal(!bookingNormal)}
+        >
+          <i className={`fas fa-sun ${classes.todayIcon}`}></i>OFFDAY
+        </Button>
         <Button
           variant="outlined"
           margin="dense"

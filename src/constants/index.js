@@ -49,6 +49,7 @@ export const DEFAULT_RESOURCE = {
 export const RESOURCE_NAME = "name";
 export const TEAM_NAME = "team";
 export const POSITION_NAME = "position";
+export const VACATION_NAME = "vacation"
 export const STATUS_NAME = "status";
 
 export const TEAM_ID = "teamId";
@@ -73,6 +74,7 @@ export const USERS_URL = "/manageUsers";
 export const RE_INVITE_URL = "/reinvited";
 export const REPORTS_URL = "/report";
 export const BOOKINGS_URL = "/bookings";
+export const DAYOFF_URL = "/dayOff";
 export const EXPORT_URL = "/export";
 export const IMPORT_URL = "/import";
 
@@ -150,7 +152,10 @@ export const DEFAULT_BOOKING = {
   percentage: 100,
   duration: 8,
 };
-
+export const DEFAULT_BOOKING_OFF = {
+  id: "",
+  resourceId: "",
+};
 export const DEFAULT_WORKSPACE = {
   id: "",
   name: "",

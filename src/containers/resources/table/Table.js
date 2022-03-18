@@ -18,13 +18,19 @@ export default function ResourcesTable(props) {
     handleOpenDialog,
     handelDeleteResource,
     callApiArchiveResource,
+    isTheView,
   } = props;
   const classes = useStyles({ emptyRows });
 
   return (
     <TableContainer component={Paper} className={classes.root} elevation={0}>
       <Table className={classes.table}>
-        <TableHeader classes={classes} handleSort={handleSort} sortName={sortName}/>
+        <TableHeader
+          classes={classes}
+          handleSort={handleSort}
+          sortName={sortName}
+          isTheView={isTheView}
+        />
         <TableBody>
           {isLoading ? (
             <LoadingTable />
@@ -37,6 +43,7 @@ export default function ResourcesTable(props) {
                   handleOpenDialog={handleOpenDialog}
                   handleDeleteProject={handelDeleteResource}
                   handleArchiveProject={callApiArchiveResource}
+                  isTheView={isTheView}
                 />
               ))}
 

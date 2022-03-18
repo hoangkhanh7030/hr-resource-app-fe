@@ -74,6 +74,7 @@ export default function Login() {
   };
 
   const handleLoginWithGG = (googleData) => {
+    console.log(googleData);
     const path = localStorage.getItem("path");
 
     dispatch(loginWithGG(googleData.profileObj))

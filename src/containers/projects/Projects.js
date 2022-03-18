@@ -62,12 +62,12 @@ export default function Projects() {
 
   const dispatch = useDispatch();
   const { id } = useParams();
-
+  const storeWorkspaces = useSelector((state) => state.workspaces);
+  
   const { message } = useSelector((state) => state.message);
   const [errorImport, setErrorImport] = useState(false);
   const storeProjects = useSelector((state) => state.projects);
   const actionStatus = _.get(storeProjects, ACTION_STATUS);
-
   const [searched, setSearched] = useState("");
   const [params, setParams] = useState(DEFAULT_PARAMS);
   const [projects, setProjects] = useState([]);
@@ -79,6 +79,17 @@ export default function Projects() {
   const [isLoading, setLoading] = useState(false);
   const isInitialMount = useRef(true);
 
+  const [isTheView,setIsTheView] = useState();
+  useEffect(() => {
+    
+    setIsTheView(checkIsTheView(id,storeWorkspaces.data));
+  }, [id,storeWorkspaces.data]);
+  const checkIsTheView = (id,storeWorkspaces) => {
+    return storeWorkspaces.some(function(element){
+        return element.id == id && element.role == "VIEW";
+    });
+  };
+  
   const fetchProjects = (loading = false) => {
     const data = {
       ...params,
@@ -282,6 +293,8 @@ export default function Projects() {
         handleReset={handleReset}
         handleImportProjects={handleImportProjects}
         handleExportProjects={handleExportProjects}
+        isTheView = {isTheView}
+        
       />
 
       <Box className={classes.boxTable}>
@@ -296,6 +309,7 @@ export default function Projects() {
           handleOpenDialog={handleOpenDialog}
           handleDeleteProject={handleDeleteProject}
           handleArchiveProject={handleArchiveProject}
+          isTheView = {isTheView}
         />
       </Box>
 

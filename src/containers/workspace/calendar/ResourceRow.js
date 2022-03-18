@@ -12,6 +12,8 @@ export default function ResourceRow({
   indexTeam = 1,
   handleDeleteBooking,
   handleOpenDialog,
+  handleDeleteBookingDayOff,
+  isBookingNormal
 }) {
   resources = _.isEmpty(resources) ? Array(3).fill({}) : resources;
   return resources
@@ -32,6 +34,8 @@ export default function ResourceRow({
             resource={resource}
             handleDeleteBooking={handleDeleteBooking}
             handleOpenDialog={handleOpenDialog}
+            handleDeleteBookingDayOff ={handleDeleteBookingDayOff}
+            isBookingNormal={isBookingNormal}
           />
         </Fragment>
       );
